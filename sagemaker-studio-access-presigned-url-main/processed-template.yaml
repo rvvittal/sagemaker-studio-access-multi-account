@@ -1,0 +1,321 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  sagemaker-presigned
+  Sample SAM Template for sagemaker-presigned
+Parameters:
+  LambdaCodeSourceS3Bucket:
+    Type: String
+    Description: S3 bucket where lambda code zip files are stored. Get the code stored from https://github.com/aws-samples/secure-sagemaker-studio-presigned-url.
+  LambdaCodeS3KeyAuth:
+    Type: String
+    Description: S3 key for lambda source code https://github.com/aws-samples/secure-sagemaker-studio-presigned-url/tree/main/auth.
+  LambdaCodeS3KeyUrl:
+    Type: String
+    Description: S3 key for lambda source code https://github.com/aws-samples/secure-sagemaker-studio-presigned-url/tree/main/presigned-domain-url.
+  StageName:
+    Type: String
+    Default: dev
+    Description: The API-Gateway stage
+  SageMakerDomainId:
+    Type: String
+    Default: ""
+    Description: SageMaker Domain ID
+  OnPremCIDR:
+    Type: String
+    Default: ""
+    Description: The CIDR for On-Prem access
+  VPCCIDR:
+    Type: String
+    Default: ""
+    Description: The CIDR for the VPC containing the Lambda Function
+  VPCEndpoints:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: The VPC endpoints to restrict the creation/access of the Presigned URL.
+  LambdaSecurityGroups:
+    Type: String
+    Default: ""
+    Description: The Security Group for a Lambda in a VPC
+  LambdaSubnets:
+    Type: String
+    Default: ""
+    Description: The Subnets for the Lambda in a VPC
+  APIGatewayVPCEndpoint:
+    Type: String
+    Default: ""
+    Description: The VPC Endpoint for the Private API
+Outputs:
+  APIUrl:
+    Description: API Gateway endpoint URL for Prod stage for Hello World function
+    Value: !Sub >-
+      https://${API}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/EMPLOYEE_ID
+  UserPoolID:
+    Description: Cognito User Pool ID
+    Value: !Ref CognitoUserPool
+  AppClientId:
+    Description: App Client ID
+    Value: !Ref CognitoUserPoolClient
+Resources:
+  APIStage:
+    Type: "AWS::ApiGateway::Stage"
+    Properties:
+      DeploymentId: !Ref APIDeployment35c9d9adec
+      RestApiId: !Ref API
+      StageName: !Ref StageName
+  CognitoUserPoolDomain:
+    Type: "AWS::Cognito::UserPoolDomain"
+    Properties:
+      Domain: !Sub "dns-name-${CognitoUserPoolClient}"
+      UserPoolId: !Ref CognitoUserPool
+    DependsOn:
+      - CognitoUserPoolClient
+  CognitoUserPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties:
+      UserPoolName: SageMakerPool
+  AuthFunctionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Tags:
+        - Key: "lambda:createdBy"
+          Value: SAM
+  APIDeployment35c9d9adec:
+    Type: "AWS::ApiGateway::Deployment"
+    Properties:
+      Description: "RestApi deployment."
+      RestApiId: !Ref API
+      StageName: Stage
+  PresignedLambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: /
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+        - PolicyName: authpolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: "sagemaker:CreatePresignedDomainUrl"
+                Resource: !Sub >-
+                  arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:user-profile/*/*
+                Condition:
+                  IpAddress:
+                    "aws:VpcSourceIp": !Ref VPCCIDR
+              - Effect: Allow
+                Action: "sagemaker:CreatePresignedDomainUrl"
+                Resource: !Sub >-
+                  arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:user-profile/*/*
+                Condition:
+                  IpAddress:
+                    "aws:SourceIp": !Ref OnPremCIDR
+              - Effect: Allow
+                Action: "sagemaker:CreatePresignedDomainUrl"
+                Resource: !Sub >-
+                  arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:user-profile/*/*
+                Condition:
+                  StringEquals:
+                    "aws:sourceVpce": !Ref VPCEndpoints
+        - PolicyName: vpcpolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ec2:CreateNetworkInterface"
+                  - "ec2:DescribeNetworkInterfaces"
+                  - "ec2:DeleteNetworkInterface"
+                Resource: !Sub >-
+                  arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:network-interface/*
+  PresignedFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Code:
+        S3Bucket:
+          !Ref LambdaCodeSourceS3Bucket
+        S3Key:
+          !Ref LambdaCodeS3KeyUrl
+      Handler: app.lambda_handler
+      Role: !GetAtt
+        - PresignedLambdaRole
+        - Arn
+      Runtime: python3.8
+      Timeout: 5
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroups
+        SubnetIds:
+          - !Ref LambdaSubnets
+      Environment:
+        Variables:
+          SAGEMAKER_DOMAIN_ID: !Ref SageMakerDomainId
+      Tags:
+        - Key: "lambda:createdBy"
+          Value: SAM
+      Architectures:
+        - x86_64
+  API:
+    Type: "AWS::ApiGateway::RestApi"
+    Properties:
+      Body:
+        info:
+          version: "1.0"
+          title: !Ref "AWS::StackName"
+        paths:
+          "/{user_id+}":
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub >-
+                  arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PresignedFunction.Arn}/invocations
+              security:
+                - LambdaRequestAuthorizer: []
+              responses: {}
+        swagger: "2.0"
+        x-amazon-apigateway-policy:
+          Version: 2012-10-17
+          Statement:
+            - Action: "execute-api:Invoke"
+              Resource: "*"
+              Effect: Allow
+              Condition:
+                StringEquals:
+                  "aws:sourceVpce": !Ref VPCEndpoints
+              Principal:
+                AWS: "*"
+        securityDefinitions:
+          LambdaRequestAuthorizer:
+            in: header
+            type: apiKey
+            name: Unused
+            x-amazon-apigateway-authorizer:
+              type: request
+              authorizerResultTtlInSeconds: 120
+              identitySource: method.request.header.Authorization
+              authorizerUri: !Sub
+                - >-
+                  arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${__FunctionArn__}/invocations
+                - __FunctionArn__: !GetAtt
+                    - AuthFunction
+                    - Arn
+              authorizerCredentials: !GetAtt
+                - AuthLambdaRole
+                - Arn
+            x-amazon-apigateway-authtype: custom
+      Parameters:
+        endpointConfigurationTypes: PRIVATE
+      EndpointConfiguration:
+        Types:
+          - PRIVATE
+        VpcEndpointIds:
+          - !Ref APIGatewayVPCEndpoint
+  AuthLambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: /
+      Policies:
+        - PolicyName: authpolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: "lambda:InvokeFunction"
+                Resource: !GetAtt
+                  - AuthFunction
+                  - Arn
+  PresignedFunctionCreateUrlPermissionStage:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref PresignedFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - >-
+          arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/*
+        - __ApiId__: !Ref API
+          __Stage__: "*"
+  AuthFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Code:
+        S3Bucket:
+          !Ref LambdaCodeSourceS3Bucket
+        S3Key:
+          !Ref LambdaCodeS3KeyUrl
+      Handler: app.lambda_handler
+      Role: !GetAtt
+        - AuthFunctionRole
+        - Arn
+      Runtime: python3.8
+      Timeout: 5
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+          COGNITO_APP_CLIENT_ID: !Ref CognitoUserPoolClient
+      Tags:
+        - Key: "lambda:createdBy"
+          Value: SAM
+  APILambdaRequestAuthorizerAuthorizerPermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt
+        - AuthFunction
+        - Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - >-
+          arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/authorizers/*
+        - __ApiId__: !Ref API
+  CognitoUserPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+      AllowedOAuthFlows:
+        - implicit
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes:
+        - email
+        - openid
+      CallbackURLs:
+        - "http://localhost"
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      SupportedIdentityProviders:
+        - COGNITO
+    DependsOn:
+      - CognitoUserPool

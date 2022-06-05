@@ -1,0 +1,26 @@
+{
+    "DomainArn": "arn:aws:sagemaker:us-east-1:833389644861:domain/d-prbk9cehcphc",
+    "DomainId": "d-prbk9cehcphc",
+    "DomainName": "default-1653969787224",
+    "HomeEfsFileSystemId": "fs-053c6bd78dceafb44",
+    "Status": "InService",
+    "CreationTime": "2022-05-30T21:03:09.248000-07:00",
+    "LastModifiedTime": "2022-05-30T21:05:55.921000-07:00",
+    "AuthMode": "IAM",
+    "DefaultUserSettings": {
+        "ExecutionRole": "arn:aws:iam::833389644861:role/service-role/AmazonSageMaker-ExecutionRole-20190617T113708",
+        "SecurityGroups": [
+            "sg-02180278ef7597cd7"
+        ],
+        "SharingSettings": {
+            "NotebookOutputOption": "Allowed",
+            "S3OutputPath": "s3://sagemaker-studio-833389644861-p9vlzkxflx/sharing"
+        }
+    },
+    "AppNetworkAccessType": "VpcOnly",
+    "SubnetIds": [
+        "subnet-0d84ccbcd8a110aa2"
+    ],
+    "Url": "https://d-prbk9cehcphc.studio.us-east-1.sagemaker.aws",
+    "VpcId": "vpc-00ec07589303524fe"
+}

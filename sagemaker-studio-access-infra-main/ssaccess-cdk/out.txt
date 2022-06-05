@@ -1,0 +1,554 @@
+${Token[TOKEN.341]}
+Resources:
+  VPCB9E5F0B4:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: SsaccessCdkStack/VPC
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/Resource
+  VPCingressSubnet1SubnetBB7FDF67:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPCB9E5F0B4
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.0.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: ingress
+        - Key: aws-cdk:subnet-type
+          Value: Public
+        - Key: Name
+          Value: SsaccessCdkStack/VPC/ingressSubnet1
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/ingressSubnet1/Subnet
+  VPCingressSubnet1RouteTableEEF02A64:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPCB9E5F0B4
+      Tags:
+        - Key: Name
+          Value: SsaccessCdkStack/VPC/ingressSubnet1
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/ingressSubnet1/RouteTable
+  VPCingressSubnet1RouteTableAssociation7700457B:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: VPCingressSubnet1RouteTableEEF02A64
+      SubnetId:
+        Ref: VPCingressSubnet1SubnetBB7FDF67
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/ingressSubnet1/RouteTableAssociation
+  VPCingressSubnet1DefaultRouteC1C9D77C:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: VPCingressSubnet1RouteTableEEF02A64
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: VPCIGWB7E252D3
+    DependsOn:
+      - VPCVPCGW99B986DC
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/ingressSubnet1/DefaultRoute
+  VPCingressSubnet1EIP46E19D36:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: SsaccessCdkStack/VPC/ingressSubnet1
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/ingressSubnet1/EIP
+  VPCingressSubnet1NATGateway06A5D97E:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId:
+        Ref: VPCingressSubnet1SubnetBB7FDF67
+      AllocationId:
+        Fn::GetAtt:
+          - VPCingressSubnet1EIP46E19D36
+          - AllocationId
+      Tags:
+        - Key: Name
+          Value: SsaccessCdkStack/VPC/ingressSubnet1
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/ingressSubnet1/NATGateway
+  VPCingressSubnet2SubnetE30F0091:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPCB9E5F0B4
+      AvailabilityZone:
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: ingress
+        - Key: aws-cdk:subnet-type
+          Value: Public
+        - Key: Name
+          Value: SsaccessCdkStack/VPC/ingressSubnet2
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/ingressSubnet2/Subnet
+  VPCingressSubnet2RouteTable8565F2D0:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPCB9E5F0B4
+      Tags:
+        - Key: Name
+          Value: SsaccessCdkStack/VPC/ingressSubnet2
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/ingressSubnet2/RouteTable
+  VPCingressSubnet2RouteTableAssociation35C35494:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: VPCingressSubnet2RouteTable8565F2D0
+      SubnetId:
+        Ref: VPCingressSubnet2SubnetE30F0091
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/ingressSubnet2/RouteTableAssociation
+  VPCingressSubnet2DefaultRoute8E2F45A7:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: VPCingressSubnet2RouteTable8565F2D0
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: VPCIGWB7E252D3
+    DependsOn:
+      - VPCVPCGW99B986DC
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/ingressSubnet2/DefaultRoute
+  VPCingressSubnet2EIP34D6A15B:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: SsaccessCdkStack/VPC/ingressSubnet2
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/ingressSubnet2/EIP
+  VPCingressSubnet2NATGateway19A049B5:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId:
+        Ref: VPCingressSubnet2SubnetE30F0091
+      AllocationId:
+        Fn::GetAtt:
+          - VPCingressSubnet2EIP34D6A15B
+          - AllocationId
+      Tags:
+        - Key: Name
+          Value: SsaccessCdkStack/VPC/ingressSubnet2
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/ingressSubnet2/NATGateway
+  VPCapplicationSubnet1SubnetFE5BD7C4:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPCB9E5F0B4
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.2.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: application
+        - Key: aws-cdk:subnet-type
+          Value: Private
+        - Key: Name
+          Value: SsaccessCdkStack/VPC/applicationSubnet1
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/applicationSubnet1/Subnet
+  VPCapplicationSubnet1RouteTable06DA588A:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPCB9E5F0B4
+      Tags:
+        - Key: Name
+          Value: SsaccessCdkStack/VPC/applicationSubnet1
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/applicationSubnet1/RouteTable
+  VPCapplicationSubnet1RouteTableAssociationBD8DBEDA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: VPCapplicationSubnet1RouteTable06DA588A
+      SubnetId:
+        Ref: VPCapplicationSubnet1SubnetFE5BD7C4
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/applicationSubnet1/RouteTableAssociation
+  VPCapplicationSubnet1DefaultRouteDDC3EE0F:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: VPCapplicationSubnet1RouteTable06DA588A
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: VPCingressSubnet1NATGateway06A5D97E
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/applicationSubnet1/DefaultRoute
+  VPCapplicationSubnet2Subnet9AE2E808:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPCB9E5F0B4
+      AvailabilityZone:
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.3.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: application
+        - Key: aws-cdk:subnet-type
+          Value: Private
+        - Key: Name
+          Value: SsaccessCdkStack/VPC/applicationSubnet2
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/applicationSubnet2/Subnet
+  VPCapplicationSubnet2RouteTableBE360162:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPCB9E5F0B4
+      Tags:
+        - Key: Name
+          Value: SsaccessCdkStack/VPC/applicationSubnet2
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/applicationSubnet2/RouteTable
+  VPCapplicationSubnet2RouteTableAssociationB08E8C3F:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: VPCapplicationSubnet2RouteTableBE360162
+      SubnetId:
+        Ref: VPCapplicationSubnet2Subnet9AE2E808
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/applicationSubnet2/RouteTableAssociation
+  VPCapplicationSubnet2DefaultRouteBFF28947:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: VPCapplicationSubnet2RouteTableBE360162
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: VPCingressSubnet2NATGateway19A049B5
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/applicationSubnet2/DefaultRoute
+  VPCIGWB7E252D3:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: SsaccessCdkStack/VPC
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/IGW
+  VPCVPCGW99B986DC:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VPCB9E5F0B4
+      InternetGatewayId:
+        Ref: VPCIGWB7E252D3
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPC/VPCGW
+  VPCSecurityGroupF5CD9B36:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow tcp traffic self-ref
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPCSecurityGroup/Resource
+  VPCSecurityGroupfromSsaccessCdkStackVPCSecurityGroupB0AF69EEALLPORTSC2078A81:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      Description: self-ref
+      FromPort: 0
+      GroupId:
+        Fn::GetAtt:
+          - VPCSecurityGroupF5CD9B36
+          - GroupId
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+          - VPCSecurityGroupF5CD9B36
+          - GroupId
+      ToPort: 65535
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPCSecurityGroup/from SsaccessCdkStackVPCSecurityGroupB0AF69EE:ALL PORTS
+  VPCEPSecurityGroup58F20B2C:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow https from vpc sg
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPCEPSecurityGroup/Resource
+  VPCEPSecurityGroupfromSsaccessCdkStackVPCSecurityGroupB0AF69EE44388DAFBAB:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      Description: https from vpc sg
+      FromPort: 443
+      GroupId:
+        Fn::GetAtt:
+          - VPCEPSecurityGroup58F20B2C
+          - GroupId
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+          - VPCSecurityGroupF5CD9B36
+          - GroupId
+      ToPort: 443
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/VPCEPSecurityGroup/from SsaccessCdkStackVPCSecurityGroupB0AF69EE:443
+  SMAPIVPCEndpointSecurityGroupF82ABA7B:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SsaccessCdkStack/SM API VPC Endpoint/SecurityGroup
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      SecurityGroupIngress:
+        - CidrIp:
+            Fn::GetAtt:
+              - VPCB9E5F0B4
+              - CidrBlock
+          Description:
+            Fn::Join:
+              - ""
+              - - "from "
+                - Fn::GetAtt:
+                    - VPCB9E5F0B4
+                    - CidrBlock
+                - :443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/SM API VPC Endpoint/SecurityGroup/Resource
+  SMAPIVPCEndpoint9E71427A:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.us-east-1.sagemaker.api
+      VpcId:
+        Ref: VPCB9E5F0B4
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - Fn::GetAtt:
+            - SMAPIVPCEndpointSecurityGroupF82ABA7B
+            - GroupId
+      SubnetIds:
+        - Ref: VPCapplicationSubnet1SubnetFE5BD7C4
+        - Ref: VPCapplicationSubnet2Subnet9AE2E808
+      VpcEndpointType: Interface
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/SM API VPC Endpoint/Resource
+  StudioVPCEndpointSecurityGroupC0617BA9:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SsaccessCdkStack/Studio VPC Endpoint/SecurityGroup
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      SecurityGroupIngress:
+        - CidrIp:
+            Fn::GetAtt:
+              - VPCB9E5F0B4
+              - CidrBlock
+          Description:
+            Fn::Join:
+              - ""
+              - - "from "
+                - Fn::GetAtt:
+                    - VPCB9E5F0B4
+                    - CidrBlock
+                - :443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId:
+        Ref: VPCB9E5F0B4
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/Studio VPC Endpoint/SecurityGroup/Resource
+  StudioVPCEndpointF253AEAF:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: aws.sagemaker.us-east-1.studio
+      VpcId:
+        Ref: VPCB9E5F0B4
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - Fn::GetAtt:
+            - StudioVPCEndpointSecurityGroupC0617BA9
+            - GroupId
+      SubnetIds:
+        - Ref: VPCapplicationSubnet1SubnetFE5BD7C4
+        - Ref: VPCapplicationSubnet2Subnet9AE2E808
+      VpcEndpointType: Interface
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/Studio VPC Endpoint/Resource
+  RoleForSagemakerStudioUsersB19B3B05:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+      RoleName: RoleSagemakerStudioUsers
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/RoleForSagemakerStudioUsers/Resource
+  SagemakerDomainTemplateSagemakerDomainCDK9766D689:
+    Type: AWS::SageMaker::Domain
+    Properties:
+      AuthMode: IAM
+      DefaultUserSettings:
+        ExecutionRole:
+          Fn::GetAtt:
+            - RoleForSagemakerStudioUsersB19B3B05
+            - Arn
+      DomainName: mySagemakerStudioDomain
+      SubnetIds:
+        - Ref: VPCapplicationSubnet1SubnetFE5BD7C4
+        - Ref: VPCapplicationSubnet2Subnet9AE2E808
+      VpcId:
+        Ref: VPCB9E5F0B4
+      AppNetworkAccessType: VpcOnly
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/31Ry26DMBD8lt6NmyJV6jWiUcSlQlDlGhmzpBvwGvmRKEL8e40J5dbTzI5G4xk55ek7372Iu01k0yU91nysnJAdC9J5BJny8TRIlrV0KjJW+LpHWfmawM3axkrtHXyLuodN37S9tVqicKjpzzyTQ17M8CXcUTi4iwcrDN4C3YJzcmACXw1Lk+e1d6HrjwJyrALpDbrH0Wg/xA7/CjldDFjLYnwrJISVB2oGjeSeb6znxFAoPpZ62TbjxKy4gBIdGB6kT60E0sRKsNobCUz22jetNipOPiPJ3jfA45xIY9DqDjzT1ODsnRjp4Lza19vbB9+Fv7laxMR4cqiAlwv+AmkMxSu3AQAA
+    Metadata:
+      aws:cdk:path: SsaccessCdkStack/CDKMetadata/Default
+    Condition: CDKMetadataAvailable
+Conditions:
+  CDKMetadataAvailable:
+    Fn::Or:
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - af-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ca-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-northwest-1
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-3
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - me-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - sa-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-2
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-2
+Parameters:
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cdk-bootstrap/hnb659fds/version
+    Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
+Rules:
+  CheckBootstrapVersion:
+    Assertions:
+      - Assert:
+          Fn::Not:
+            - Fn::Contains:
+                - - "1"
+                  - "2"
+                  - "3"
+                  - "4"
+                  - "5"
+                - Ref: BootstrapVersion
+        AssertDescription: CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.
+
